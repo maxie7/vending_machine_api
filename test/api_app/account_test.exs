@@ -69,5 +69,13 @@ defmodule ApiApp.AccountTest do
       user = user_fixture()
       assert %Ecto.Changeset{} = Account.change_user(user)
     end
+
+    test "authenticate_user/2 authenticates the user" do
+      user = user_without_password()
+
+      assert {:error, "Wrong username or password"} = Account.authenticate_user("wrong username", "")
+      assert {:ok, authenticated_user} = Account.authenticate_user(user.username, @valid_attrs.password)
+      assert user == authenticated_user
+    end
   end
 end

@@ -6,6 +6,7 @@ defmodule ApiAppWeb.UserControllerTest do
   alias ApiApp.Account
   alias ApiApp.Account.User
   alias Plug.Test
+  alias ApiAppWeb.Router.Helpers, as: Routes
 
   @create_attrs %{
     username: "some_username",
@@ -105,6 +106,44 @@ defmodule ApiAppWeb.UserControllerTest do
       assert_error_sent 404, fn ->
         get(conn, ~p"/api/users/#{user}")
       end
+    end
+  end
+
+  describe "sign in user" do
+    test "renders user when user credentials are good", %{
+      conn: conn,
+      current_user: current_user
+    } do
+      conn =
+        post(
+          conn,
+          Routes.user_path(conn, :sign_in, %{
+            username: current_user.username,
+            password: @current_user_attrs.password
+          })
+        )
+
+      assert json_response(conn, 200)["data"] == %{
+               "user" => %{
+                 "id" => current_user.id,
+                 "username" => current_user.username
+               }
+             }
+    end
+
+    test "renders error when user credentials are bad", %{conn: conn} do
+      conn =
+        post(
+          conn,
+          Routes.user_path(conn, :sign_in, %{
+            username: "non-existent username",
+            password: ""
+          })
+        )
+
+      assert json_response(conn, 401)["errors"] == %{
+               "detail" => "Wrong username or password"
+             }
     end
   end
 

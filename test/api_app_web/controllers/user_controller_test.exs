@@ -3,7 +3,9 @@ defmodule ApiAppWeb.UserControllerTest do
 
   import ApiApp.AccountFixtures
 
+  alias ApiApp.Account
   alias ApiApp.Account.User
+  alias Plug.Test
 
   @create_attrs %{
     username: "some_username",
@@ -16,15 +18,38 @@ defmodule ApiAppWeb.UserControllerTest do
     is_active: false
   }
   @invalid_attrs %{username: nil, password: nil, is_active: nil}
+  @current_user_attrs %{
+    username: "some_current_user_username",
+    is_active: true,
+    password: "some_current_user_password"
+  }
+
+  def fixture(:user) do
+    {:ok, user} = Account.create_user(@create_attrs)
+    user
+  end
+
+  def fixture(:current_user) do
+    {:ok, current_user} = Account.create_user(@current_user_attrs)
+    current_user
+  end
 
   setup %{conn: conn} do
-    {:ok, conn: put_req_header(conn, "accept", "application/json")}
+    {:ok, conn: conn, current_user: current_user} = setup_current_user(conn)
+    {:ok, conn: put_req_header(conn, "accept", "application/json"), current_user: current_user}
   end
 
   describe "index" do
-    test "lists all users", %{conn: conn} do
+    test "lists all users", %{conn: conn, current_user: current_user} do
       conn = get(conn, ~p"/api/users")
-      assert json_response(conn, 200)["data"] == []
+      assert json_response(conn, 200)["data"] == [
+        %{
+          "id" => current_user.id,
+          "username" => current_user.username,
+          "is_active" => current_user.is_active,
+          "password" => nil
+        }
+      ]
     end
   end
 
@@ -86,5 +111,15 @@ defmodule ApiAppWeb.UserControllerTest do
   defp create_user(_) do
     user = user_fixture()
     %{user: user}
+  end
+
+  defp setup_current_user(conn) do
+    current_user = fixture(:current_user)
+
+    {
+      :ok,
+      conn: Test.init_test_session(conn, current_user_id: current_user.id),
+      current_user: current_user
+    }
   end
 end

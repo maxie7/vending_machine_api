@@ -9,3 +9,7 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+IO.puts("Adding a couple of users...")
+
+ApiApp.Account.create_user(%{username: "user1", password: "qwerty"})
+ApiApp.Account.create_user(%{username: "user2", password: "asdfgh"})

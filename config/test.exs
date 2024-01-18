@@ -6,8 +6,8 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :api_app, ApiApp.Repo,
-  username: "api_app_test",
-  password: "api_app_test",
+  username: "api_app_dev",
+  password: "api_app_dev",
   hostname: "localhost",
   database: "api_app_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
@@ -31,3 +31,6 @@ config :logger, level: :warning
 
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime
+
+# Relax crypto strength a bit during testing
+config :bcrypt_elixir, :log_rounds, 4

@@ -18,7 +18,15 @@ defmodule ApiAppWeb.ErrorView do
     %{errors: %{detail: message}}
   end
 
+  def render("404.json", _assigns) do
+    %{errors: %{detail: "Endpoint not found!"}}
+  end
+
   def render("422.json", _assigns) do
     %{errors: %{detail: "422 Unprocessable Entity"}}
+  end
+
+  def render("500.json", _assigns) do
+    %{errors: %{detail: "Internal server error :("}}
   end
 end

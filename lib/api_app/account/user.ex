@@ -9,6 +9,8 @@ defmodule ApiApp.Account.User do
     field :is_active, :boolean, default: false
     field :password, :string, virtual: true
     field :password_hash, :string
+    field :deposit, :integer, default: 0
+    field :role, :string, default: "buyer"
 
     timestamps(type: :utc_datetime_usec)
   end
@@ -16,7 +18,7 @@ defmodule ApiApp.Account.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:username, :is_active, :password])
+    |> cast(attrs, [:username, :is_active, :password, :deposit, :role])
     |> validate_required([:username, :is_active, :password])
     |> unique_constraint(:username)
     |> put_password_hash()

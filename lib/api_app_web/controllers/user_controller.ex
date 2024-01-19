@@ -59,4 +59,23 @@ defmodule ApiAppWeb.UserController do
         |> render("401.json", message: message)
     end
   end
+
+  def deposit(conn, %{"amount" => amount}) do
+    amount = String.to_integer(amount)
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+    user = Account.get_user!(current_user_id)
+
+    case user.role do
+      "buyer" ->
+        if amount in [5, 10, 20, 50, 100] do
+          {:ok, user} = Account.deposit(user, %{deposit: amount})
+          render(conn, :show, user: user)
+        else
+          send_resp(conn, 403, "Invalid amount")
+        end
+
+      "seller" ->
+        send_resp(conn, 403, "Seller can't deposit")
+    end
+  end
 end

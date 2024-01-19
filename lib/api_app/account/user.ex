@@ -24,6 +24,14 @@ defmodule ApiApp.Account.User do
     |> put_password_hash()
   end
 
+  def change_deposit(user, attrs) do
+    user
+    |> cast(attrs, [:username, :deposit])
+    |> validate_required([:deposit])
+    |> unique_constraint(:username)
+    |> put_password_hash()
+  end
+
   defp put_password_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
     change(changeset, Bcrypt.add_hash(password))
   end

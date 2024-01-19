@@ -19,6 +19,7 @@ defmodule ApiAppWeb.Router do
     pipe_through [:api, :api_auth]
     resources "/users", UserController, except: [:new, :edit]
     resources "/products", ProductController
+    post "/deposit", UserController, :deposit
   end
 
   # Plug function

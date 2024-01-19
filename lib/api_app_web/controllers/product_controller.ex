@@ -15,11 +15,24 @@ defmodule ApiAppWeb.ProductController do
   end
 
   def create(conn, %{"product" => product_params}) do
-    with {:ok, %Product{} = product} <- Sales.create_product(product_params) do
-      conn
-      |> put_status(:created)
-      |> put_resp_header("location", ~p"/api/products/#{product}")
-      |> render(:show, product: product)
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+    user = Account.get_user!(current_user_id)
+
+    case user.role do
+      "buyer" ->
+        send_resp(conn, 403, "Buyer role can't create a product")
+
+      "seller" ->
+        if user.id == product_params["seller_id"] do
+          with {:ok, %Product{} = product} <- Sales.create_product(product_params) do
+            conn
+            |> put_status(:created)
+            |> put_resp_header("location", ~p"/api/products/#{product}")
+            |> render(:show, product: product)
+          end
+        else
+          send_resp(conn, 403, "You have only permission to create a product with your seller id")
+        end
     end
   end
 
@@ -30,17 +43,41 @@ defmodule ApiAppWeb.ProductController do
 
   def update(conn, %{"id" => id, "product" => product_params}) do
     product = Sales.get_product!(id)
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+    user = Account.get_user!(current_user_id)
 
-    with {:ok, %Product{} = product} <- Sales.update_product(product, product_params) do
-      render(conn, :show, product: product)
+    case user.role do
+      "buyer" ->
+        send_resp(conn, 403, "Buyer role can't update a product")
+
+      "seller" ->
+        if user.id == product_params["seller_id"] do
+          with {:ok, %Product{} = product} <- Sales.update_product(product, product_params) do
+            render(conn, :show, product: product)
+          end
+        else
+          send_resp(conn, 403, "You have only permission to update a product with your seller id")
+        end
     end
   end
 
   def delete(conn, %{"id" => id}) do
     product = Sales.get_product!(id)
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+    user = Account.get_user!(current_user_id)
 
-    with {:ok, %Product{}} <- Sales.delete_product(product) do
-      send_resp(conn, :no_content, "")
+    case user.role do
+      "buyer" ->
+        send_resp(conn, 403, "Buyer role can't delete a product")
+
+      "seller" ->
+        if user.id == product.seller_id do
+          with {:ok, %Product{}} <- Sales.delete_product(product) do
+            send_resp(conn, :no_content, "")
+          end
+        else
+          send_resp(conn, 403, "You have only permission to delete a product with your seller id")
+        end
     end
   end
 

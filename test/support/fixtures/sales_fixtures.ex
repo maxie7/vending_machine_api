@@ -19,7 +19,7 @@ defmodule ApiApp.SalesFixtures do
         amount_available: 42,
         cost: 42,
         product_name: unique_product_product_name(),
-        seller_id: "some seller_id"
+        seller_id: "some_seller_id"
       })
       |> ApiApp.Sales.create_product()
 

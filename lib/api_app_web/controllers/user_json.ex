@@ -20,6 +20,8 @@ defmodule ApiAppWeb.UserJSON do
       id: user.id,
       username: user.username,
       password: user.password,
+      role: user.role,
+      deposit: user.deposit,
       is_active: user.is_active
     }
   end

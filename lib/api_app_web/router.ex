@@ -20,6 +20,7 @@ defmodule ApiAppWeb.Router do
     resources "/users", UserController, except: [:new, :edit]
     resources "/products", ProductController
     post "/deposit", UserController, :deposit
+    post "/buy", ProductController, :buy
   end
 
   # Plug function

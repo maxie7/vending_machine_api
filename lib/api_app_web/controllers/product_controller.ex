@@ -1,6 +1,9 @@
 defmodule ApiAppWeb.ProductController do
   use ApiAppWeb, :controller
 
+  alias ApiApp.Account
+  alias ApiApp.Helpers.ChangeCalculator
+  alias ApiApp.Helpers.ListFormatter
   alias ApiApp.Sales
   alias ApiApp.Sales.Product
 
@@ -38,6 +41,38 @@ defmodule ApiAppWeb.ProductController do
 
     with {:ok, %Product{}} <- Sales.delete_product(product) do
       send_resp(conn, :no_content, "")
+    end
+  end
+
+  def buy(conn, %{"product_id" => product_id, "product_amount" => product_amount}) do
+    product_amount = String.to_integer(product_amount)
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+
+    user = Account.get_user!(current_user_id)
+    product = Sales.get_product!(product_id)
+    order_cost = product_amount * product.cost
+
+    case user.role do
+      "buyer" ->
+        if user.deposit >= order_cost && product_amount <= product.amount_available do
+          {:ok, user} = Account.deposit(user, %{deposit: -order_cost})
+          {:ok, _product} = Sales.update_product(product, %{amount_available: product.amount_available - product_amount})
+          send_resp(conn, 200,
+            "Order completed!
+            Total spent: #{order_cost};
+            product #{product.product_name} purchased;
+            Your change (#{user.deposit}) in coins: #{
+              user.deposit
+              |> ChangeCalculator.calculate_change()
+              |> ListFormatter.format_list()
+            }"
+          )
+        else
+          send_resp(conn, 403, "Insufficient funds")
+        end
+
+      "seller" ->
+        send_resp(conn, 403, "Seller role can't buy a product")
     end
   end
 end

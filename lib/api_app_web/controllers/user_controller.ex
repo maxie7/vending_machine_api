@@ -25,8 +25,9 @@ defmodule ApiAppWeb.UserController do
     render(conn, :show, user: user)
   end
 
-  def update(conn, %{"id" => id, "user" => user_params}) do
-    user = Account.get_user!(id)
+  def update(conn, %{"id" => _id, "user" => user_params}) do
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+    user = Account.get_user!(current_user_id)
 
     with {:ok, %User{} = user} <- Account.update_user(user, user_params) do
       render(conn, :show, user: user)
@@ -76,6 +77,24 @@ defmodule ApiAppWeb.UserController do
 
       "seller" ->
         send_resp(conn, 403, "Seller can't deposit")
+    end
+  end
+
+  def reset(conn, _params) do
+    %{"current_user_id" => current_user_id} = conn.private.plug_session
+    user = Account.get_user!(current_user_id)
+
+    case user.role do
+      "buyer" ->
+        if user.deposit > 0 do
+          {:ok, user} = Account.deposit(user, %{deposit: 0})
+          render(conn, :show, user: user)
+        else
+          send_resp(conn, 406, "Nothing to reset")
+        end
+
+      "seller" ->
+        send_resp(conn, 403, "Seller has no deposit")
     end
   end
 end

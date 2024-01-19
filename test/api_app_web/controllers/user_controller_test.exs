@@ -48,7 +48,9 @@ defmodule ApiAppWeb.UserControllerTest do
           "id" => current_user.id,
           "username" => current_user.username,
           "is_active" => current_user.is_active,
-          "password" => nil
+          "password" => nil,
+          "deposit" => 0,
+          "role" => "buyer"
         }
       ]
     end
@@ -77,17 +79,23 @@ defmodule ApiAppWeb.UserControllerTest do
   describe "update user" do
     setup [:create_user]
 
-    test "renders user when data is valid", %{conn: conn, user: %User{id: id} = user} do
+    test "renders user when data is valid", %{conn: conn, user: %User{id: _id} = user} do
       conn = put(conn, ~p"/api/users/#{user}", user: @update_attrs)
-      assert %{"id" => ^id} = json_response(conn, 200)["data"]
+      assert %{
+          "id" => id,
+          "deposit" => 0,
+          "is_active" => false,
+          "password" => "some_updated_password",
+          "role" => "buyer", "username" => "some_updated_username"
+        } = json_response(conn, 200)["data"]
 
       conn = get(conn, ~p"/api/users/#{id}")
 
       assert %{
-               "id" => ^id,
-               "is_active" => false,
-               "username" => "some_updated_username"
-             } = json_response(conn, 200)["data"]
+          "id" => ^id,
+          "is_active" => false,
+          "username" => "some_updated_username"
+        } = json_response(conn, 200)["data"]
     end
 
     test "renders errors when data is invalid", %{conn: conn, user: user} do

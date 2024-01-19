@@ -13,14 +13,16 @@ defmodule ApiAppWeb.Router do
   scope "/api", ApiAppWeb do
     pipe_through :api
     post "/users/sign_in", UserController, :sign_in
+    post "/users/sign_up", UserController, :create
   end
 
   scope "/api", ApiAppWeb do
     pipe_through [:api, :api_auth]
-    resources "/users", UserController, except: [:new, :edit]
+    resources "/users", UserController, except: [:new]
     resources "/products", ProductController
     post "/deposit", UserController, :deposit
     post "/buy", ProductController, :buy
+    get "/reset", UserController, :reset
   end
 
   # Plug function

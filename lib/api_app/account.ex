@@ -73,6 +73,12 @@ defmodule ApiApp.Account do
     |> Repo.update()
   end
 
+  def deposit(%User{} = user, %{deposit: 0}) do
+    user
+    |> User.change_deposit(%{deposit: 0})
+    |> Repo.update()
+  end
+
   def deposit(%User{} = user, %{deposit: new_deposit}) do
     user
     |> User.change_deposit(%{deposit: user.deposit + new_deposit})

@@ -46,7 +46,7 @@ defmodule ApiAppWeb.Endpoint do
   plug Plug.Head
   plug Plug.Session, @session_options
   plug Corsica,
-    origins: "http://localhost:5173"
+    origins: "http://localhost:5174"
     # allow_credentials: true,
     # allow_headers: ["Content-Type"],
     # log: [rejected: :error, invalid: :warn, accepted: :debug]

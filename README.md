@@ -1,18 +1,18 @@
-# ApiApp
+## VendingMachine API
 
-To start your Phoenix server:
+To start the project locally:
 
-  * Run `mix setup` to install and setup dependencies
-  * Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
+- Run `docker-compose up -d` to start the database
+- Get the dependencies `mix deps.get`
+- Start Phoenix endpoint with `mix phx.server` or inside IEx with `iex -S mix phx.server`
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+To test use Postman (the collection is at `/test/postman` folder) or Curl.
+Example of Curl request:
 
-Ready to run in production? Please [check our deployment guides](https://hexdocs.pm/phoenix/deployment.html).
+```
+curl -H "Content-Type: application/json" -X POST -d '{"username":"test1","password":"test1"}' http://localhost:4000/api/users/sign_in -c cookies.txt -b cookies.txt -i
+```
 
-## Learn more
+For resolving CORS `corsica` package is used (the port for frontend is 5174)
 
-  * Official website: https://www.phoenixframework.org/
-  * Guides: https://hexdocs.pm/phoenix/overview.html
-  * Docs: https://hexdocs.pm/phoenix
-  * Forum: https://elixirforum.com/c/phoenix-forum
-  * Source: https://github.com/phoenixframework/phoenix
+To run tests: `mix test`

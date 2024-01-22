@@ -73,6 +73,12 @@ defmodule ApiApp.Account do
     |> Repo.update()
   end
 
+  def change_active_field(%User{} = user, attrs) do
+    user
+    |> User.change_active(attrs)
+    |> Repo.update()
+  end
+
   def deposit(%User{} = user, %{deposit: 0}) do
     user
     |> User.change_deposit(%{deposit: 0})

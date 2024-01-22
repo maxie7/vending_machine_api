@@ -25,6 +25,24 @@ defmodule ApiAppWeb.UserController do
     render(conn, :show, user: user)
   end
 
+  def logout_all(conn, %{"username" => username, "password" => password}) do
+    case Account.authenticate_user(username, password) do
+      {:ok, user} ->
+        {:ok, _user} = Account.change_active_field(user, %{is_active: false})
+        conn
+        |> delete_session(:current_user_id)
+        |> put_status(:ok)
+        |> put_view(ApiAppWeb.UserView)
+        |> render("sign_in.json", user: user)
+
+      {:error, message} ->
+        conn
+        |> put_status(:unauthorized)
+        |> put_view(ApiAppWeb.ErrorView)
+        |> render("401.json", message: message)
+    end
+  end
+
   def update(conn, %{"id" => _id, "user" => user_params}) do
     %{"current_user_id" => current_user_id} = conn.private.plug_session
     user = Account.get_user!(current_user_id)
@@ -43,14 +61,23 @@ defmodule ApiAppWeb.UserController do
   end
 
   def sign_in(conn, %{"username" => username, "password" => password}) do
-    case ApiApp.Account.authenticate_user(username, password) do
+    case Account.authenticate_user(username, password) do
       {:ok, user} ->
-        conn
-        |> put_session(:current_user_id, user.id)
-        |> configure_session(renew: true)
-        |> put_status(:ok)
-        |> put_view(ApiAppWeb.UserView)
-        |> render("sign_in.json", user: user)
+        if user.is_active do
+          conn
+          |> delete_session(:current_user_id)
+          |> put_status(:unauthorized)
+          |> put_view(ApiAppWeb.ErrorView)
+          |> render("401.json", message: "There is already an active session using your account")
+        else
+          {:ok, _user} = Account.change_active_field(user, %{is_active: true})
+          conn
+          |> put_session(:current_user_id, user.id)
+          |> configure_session(renew: true)
+          |> put_status(:ok)
+          |> put_view(ApiAppWeb.UserView)
+          |> render("sign_in.json", user: user)
+        end
 
       {:error, message} ->
         conn

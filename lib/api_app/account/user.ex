@@ -32,6 +32,13 @@ defmodule ApiApp.Account.User do
     |> put_password_hash()
   end
 
+  def change_active(user, attrs) do
+    user
+    |> cast(attrs, [:is_active])
+    |> validate_required([:is_active])
+    |> put_password_hash()
+  end
+
   defp put_password_hash(%Ecto.Changeset{valid?: true, changes: %{password: password}} = changeset) do
     change(changeset, Bcrypt.add_hash(password))
   end

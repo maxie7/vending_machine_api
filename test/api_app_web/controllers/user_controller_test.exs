@@ -21,7 +21,7 @@ defmodule ApiAppWeb.UserControllerTest do
   @invalid_attrs %{username: nil, password: nil, is_active: nil}
   @current_user_attrs %{
     username: "some_current_user_username",
-    is_active: true,
+    is_active: false,
     password: "some_current_user_password"
   }
 

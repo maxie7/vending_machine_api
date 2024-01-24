@@ -94,8 +94,8 @@ defmodule ApiAppWeb.ProductController do
         if user.deposit >= order_cost && product_amount <= product.amount_available do
           {:ok, user} = Account.deposit(user, %{deposit: -order_cost})
           {:ok, _product} = Sales.update_product(product, %{amount_available: product.amount_available - product_amount})
-          send_resp(conn, 200,
-            "Order completed!
+
+          resp_body = "Order completed!
             Total spent: #{order_cost};
             product #{product.product_name} purchased;
             Your change (#{user.deposit}) in coins: #{
@@ -103,13 +103,20 @@ defmodule ApiAppWeb.ProductController do
               |> ChangeCalculator.calculate_change()
               |> ListFormatter.format_list()
             }"
-          )
+
+          conn
+          |> put_resp_content_type("application/json")
+          |> send_resp(200, Jason.encode!(resp_body))
         else
-          send_resp(conn, 403, "Insufficient funds")
+          conn
+          |> put_resp_content_type("application/json")
+          |> send_resp(403, Jason.encode!("Insufficient funds"))
         end
 
       "seller" ->
-        send_resp(conn, 403, "Seller role can't buy a product")
+        conn
+        |> put_resp_content_type("application/json")
+        |> send_resp(403, Jason.encode!("Seller role cannot buy a product"))
     end
   end
 end

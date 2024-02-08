@@ -19,8 +19,8 @@ defmodule ApiAppWeb.Router do
 
   scope "/api", ApiAppWeb do
     pipe_through [:api, :api_auth]
-    resources "/users", UserController, except: [:new]
-    resources "/products", ProductController
+    resources "/users", UserController, except: [:new, :edit]
+    resources "/products", ProductController, except: [:new, :edit]
     post "/deposit", UserController, :deposit
     post "/buy", ProductController, :buy
     get "/reset", UserController, :reset

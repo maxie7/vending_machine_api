@@ -9,11 +9,20 @@ defmodule ApiAppWeb.ProductController do
 
   action_fallback ApiAppWeb.FallbackController
 
+  @spec index(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def index(conn, _params) do
     products = Sales.list_products()
     render(conn, :index, products: products)
   end
 
+  @spec create(
+          atom()
+          | %{
+              :private => atom() | %{:plug_session => map(), optional(any()) => any()},
+              optional(any()) => any()
+            },
+          map()
+        ) :: any()
   def create(conn, %{"product" => product_params}) do
     %{"current_user_id" => current_user_id} = conn.private.plug_session
     user = Account.get_user!(current_user_id)
@@ -36,11 +45,20 @@ defmodule ApiAppWeb.ProductController do
     end
   end
 
+  @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, %{"id" => id}) do
     product = Sales.get_product!(id)
     render(conn, :show, product: product)
   end
 
+  @spec update(
+          atom()
+          | %{
+              :private => atom() | %{:plug_session => map(), optional(any()) => any()},
+              optional(any()) => any()
+            },
+          map()
+        ) :: any()
   def update(conn, %{"id" => id, "product" => product_params}) do
     product = Sales.get_product!(id)
     %{"current_user_id" => current_user_id} = conn.private.plug_session
@@ -61,6 +79,14 @@ defmodule ApiAppWeb.ProductController do
     end
   end
 
+  @spec delete(
+          atom()
+          | %{
+              :private => atom() | %{:plug_session => map(), optional(any()) => any()},
+              optional(any()) => any()
+            },
+          map()
+        ) :: any()
   def delete(conn, %{"id" => id}) do
     product = Sales.get_product!(id)
     %{"current_user_id" => current_user_id} = conn.private.plug_session
@@ -81,6 +107,7 @@ defmodule ApiAppWeb.ProductController do
     end
   end
 
+  @spec buy(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def buy(conn, %{"product_id" => product_id, "product_amount" => product_amount}) do
     product_amount = String.to_integer(product_amount)
     %{"current_user_id" => current_user_id} = conn.private.plug_session

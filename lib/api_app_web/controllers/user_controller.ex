@@ -6,11 +6,13 @@ defmodule ApiAppWeb.UserController do
 
   action_fallback ApiAppWeb.FallbackController
 
+  @spec index(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def index(conn, _params) do
     users = Account.list_users()
     render(conn, :index, users: users)
   end
 
+  @spec create(any(), map()) :: any()
   def create(conn, %{"user" => user_params}) do
     with {:ok, %User{} = user} <- Account.create_user(user_params) do
       conn
@@ -20,11 +22,13 @@ defmodule ApiAppWeb.UserController do
     end
   end
 
+  @spec show(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def show(conn, %{"id" => id}) do
     user = Account.get_user!(id)
     render(conn, :show, user: user)
   end
 
+  @spec logout_all(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def logout_all(conn, %{"username" => username, "password" => password}) do
     case Account.authenticate_user(username, password) do
       {:ok, user} ->
@@ -43,6 +47,14 @@ defmodule ApiAppWeb.UserController do
     end
   end
 
+  @spec update(
+          atom()
+          | %{
+              :private => atom() | %{:plug_session => map(), optional(any()) => any()},
+              optional(any()) => any()
+            },
+          map()
+        ) :: any()
   def update(conn, %{"id" => _id, "user" => user_params}) do
     %{"current_user_id" => current_user_id} = conn.private.plug_session
     user = Account.get_user!(current_user_id)
@@ -52,6 +64,7 @@ defmodule ApiAppWeb.UserController do
     end
   end
 
+  @spec delete(any(), map()) :: any()
   def delete(conn, %{"id" => id}) do
     user = Account.get_user!(id)
 
@@ -60,6 +73,7 @@ defmodule ApiAppWeb.UserController do
     end
   end
 
+  @spec sign_in(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def sign_in(conn, %{"username" => username, "password" => password}) do
     case Account.authenticate_user(username, password) do
       {:ok, user} ->
@@ -88,6 +102,7 @@ defmodule ApiAppWeb.UserController do
     end
   end
 
+  @spec deposit(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def deposit(conn, %{"amount" => amount}) do
     amount = String.to_integer(amount)
     %{"current_user_id" => current_user_id} = conn.private.plug_session
@@ -107,6 +122,7 @@ defmodule ApiAppWeb.UserController do
     end
   end
 
+  @spec reset(Plug.Conn.t(), any()) :: Plug.Conn.t()
   def reset(conn, _params) do
     %{"current_user_id" => current_user_id} = conn.private.plug_session
     user = Account.get_user!(current_user_id)
